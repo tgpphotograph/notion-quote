@@ -107,7 +107,7 @@
       fromEl.classList.remove('fade')
 
       try {
-        const res  = await fetch('https://v1.hitokoto.cn/?c=k&c=i&c=h&c=b&encode=json')
+        const res  = await fetch('https://v1.hitokoto.cn/?c=k&c=i&c=b&encode=json')
         const data = await res.json()
 
         const quoteText = await converter(data.hitokoto)
