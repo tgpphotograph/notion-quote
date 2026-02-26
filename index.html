@@ -5,16 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>句日 QuoteDay</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       height: 100vh;
       width: 100vw;
-      background: linear-gradient(135deg, #fdfcfb 0%, #f5f0eb 100%);
       font-family: "Noto Serif TC", serif;
       overflow: hidden;
+      transition: background 0.8s ease;
     }
 
     .card {
@@ -24,137 +23,116 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 0 20px;
+      padding: 40px 48px;
       position: relative;
       cursor: pointer;
     }
 
     .quote {
-      font-size: clamp(18px, 4.5vw, 32px);
-      line-height: 1.6;
+      font-size: clamp(18px, 4vw, 30px);
+      font-weight: 400;
+      line-height: 1.8;
       color: #3a3228;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
       text-align: center;
-      max-width: 90%;
-      max-height: 70vh;
-      overflow: hidden;
-    }
-
-    .from {
-      font-size: clamp(12px, 2vw, 16px);
-      color: #b09a80;
-      text-align: right;
-      letter-spacing: 0.15em;
-      margin-top: 16px;
-      opacity: 0.8;
+      max-width: 88%;
     }
 
     .deco {
       position: absolute;
-      top: 24px;
-      left: 24px;
-      font-size: clamp(32px, 6vw, 56px);
-      color: rgba(232, 221, 208, 0.6);
+      font-size: clamp(48px, 8vw, 80px);
+      color: rgba(255,255,255,0.5);
       font-family: Georgia, serif;
       pointer-events: none;
+      line-height: 1;
     }
 
-    .deco.right {
-      left: auto;
-      right: 24px;
-      transform: scaleX(-1);
-    }
-
-    @keyframes fadeSlide {
-      0%   { opacity: 0; transform: translateY(20px) scale(0.95); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .fade { animation: fadeSlide 0.6s ease-out; }
+    .deco.left  { top: 20px; left: 24px; }
+    .deco.right { bottom: 20px; right: 24px; transform: scaleX(-1); }
 
     .hint {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
       font-size: 11px;
-      color: #b09a80;
-      opacity: 0.6;
+      color: rgba(58, 50, 40, 0.35);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
     }
+
+    @keyframes fadeSlide {
+      0%   { opacity: 0; transform: translateY(16px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade { animation: fadeSlide 0.7s ease-out; }
   </style>
 </head>
 <body>
   <div class="card" onclick="forceNewQuote()">
-    <div class="deco">❝</div>
-    <div class="deco right">❞</div>
+    <div class="deco left">❝</div>
     <p class="quote" id="quote">載入中⋯</p>
-    <p class="from" id="from"></p>
-    <div class="hint">點擊換一句，每天自動更新</div>
+    <div class="deco right">❞</div>
+    <div class="hint">點擊換一句　每天自動更新</div>
   </div>
 
   <script>
-    const converter = OpenCC.Converter({ from: 'cn', to: 'twp' })
+    let quotes = []
 
     function getTodayKey() {
       const d = new Date()
-      return `quote_${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}`
+      return `quoteday_${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}`
     }
 
-    async function fetchAndShow() {
+    function getTodayIndexKey() {
+      return getTodayKey() + '_idx'
+    }
+
+    async function loadData() {
+      const res = await fetch('./quotes.json')
+      quotes = await res.json()
+    }
+
+    function showQuote(index) {
       const quoteEl = document.getElementById('quote')
-      const fromEl  = document.getElementById('from')
+      const item    = quotes[index]
 
+      document.body.style.background = item.color
       quoteEl.classList.remove('fade')
-      fromEl.classList.remove('fade')
-
-      try {
-        const res  = await fetch('https://v1.hitokoto.cn/?c=k&c=i&c=b&encode=json')
-        const data = await res.json()
-
-        const quoteText = await converter(data.hitokoto)
-        const fromText  = data.from ? '—— ' + await converter(data.from) : ''
-
-        void quoteEl.offsetWidth
-        quoteEl.classList.add('fade')
-        fromEl.classList.add('fade')
-        quoteEl.innerText = quoteText
-        fromEl.innerText  = fromText
-
-        return { quote: quoteText, from: fromText }
-      } catch {
-        quoteEl.innerText = '每一個努力的當下，都是未來的自己在感謝你。'
-        fromEl.innerText  = ''
-        return null
-      }
+      void quoteEl.offsetWidth
+      quoteEl.classList.add('fade')
+      quoteEl.innerText = item.text
     }
 
-    // 每天第一次載入：讀快取或重新抓
-    async function loadQuote() {
-      const todayKey = getTodayKey()
-      const cached   = localStorage.getItem(todayKey)
+    function getTodayIndex() {
+      const key    = getTodayIndexKey()
+      const cached = localStorage.getItem(key)
+      if (cached !== null) return parseInt(cached)
 
-      if (cached) {
-        const { quote, from } = JSON.parse(cached)
-        const quoteEl = document.getElementById('quote')
-        const fromEl  = document.getElementById('from')
-        void quoteEl.offsetWidth
-        quoteEl.classList.add('fade')
-        fromEl.classList.add('fade')
-        quoteEl.innerText = quote
-        fromEl.innerText  = from
-      } else {
-        const result = await fetchAndShow()
-        if (result) localStorage.setItem(todayKey, JSON.stringify(result))
-      }
+      // 今天第一次：用日期產生固定 index
+      const d     = new Date()
+      const seed  = d.getFullYear() * 10000 + (d.getMonth()+1) * 100 + d.getDate()
+      const index = seed % quotes.length
+      localStorage.setItem(key, index)
+      return index
     }
 
-    // 點擊：強制換新句（不讀快取）
     async function forceNewQuote() {
-      const todayKey = getTodayKey()
-      const result   = await fetchAndShow()
-      if (result) localStorage.setItem(todayKey, JSON.stringify(result))
+      const key      = getTodayIndexKey()
+      const current  = parseInt(localStorage.getItem(key) || '0')
+      const next     = (current + 1) % quotes.length
+      localStorage.setItem(key, next)
+      showQuote(next)
     }
 
-    loadQuote()
+    async function init() {
+      await loadData()
+      const index = getTodayIndex()
+      showQuote(index)
+    }
+
+    init()
   </script>
 </body>
 </html>
