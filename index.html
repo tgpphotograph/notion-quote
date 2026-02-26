@@ -90,7 +90,7 @@
     }
 
     async function loadData() {
-      const res = await fetch('./quotes.json')
+      const res = await fetch('https://memocubee.github.io/DailyZen/quotes.json')
       quotes = await res.json()
     }
 
