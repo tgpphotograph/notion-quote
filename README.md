@@ -26,9 +26,13 @@ https://tgpphotograph.github.io/notion-quote/
 ## 🎛️ 客製化選項
 
 哲理: ?c=k
+
 勵志: ?c=i  
+
 詩詞: ?c=h
+
 文學: ?c=b
+
 動漫: ?c=d
 
 混合範例：?c=k&c=i&c=h&c=b
@@ -36,18 +40,13 @@ https://tgpphotograph.github.io/notion-quote/
 ## 🎨 配色主題
 
 修改 CSS 的 background、color：
+
 藍色系: #e8f4f8 → #a8d5e2
+
 深色系: #1a1a1a → #2d2d2d
 
-## 📊 技術細節
-
-API: v1.hitokoto.cn (中國一言)
-簡繁轉換: OpenCC.js
-快取: localStorage (每天一句)
-字體: Noto Serif TC (Google Fonts)
-尺寸: clamp() 自適應
-動畫: CSS keyframes
 
 ## 📄 授權
+
 作者: 記憶方塊 @memo.cubee
-Demo: https://tgpphotograph.github.io/notion-quote/
+
