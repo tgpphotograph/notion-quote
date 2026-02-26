@@ -14,12 +14,12 @@
 - ✅ **客製化**：可調整金句類型、配色、字體
 
 ## 🎨 預覽
-https://tgpphotograph.github.io/notion-quote/ 
+https://memocubee.github.io/DailyZen/
 
 ## 📱 嵌入方式
 
 ### Notion
-1.貼入網址 https://tgpphotograph.github.io/notion-quote/
+1.貼入網址 https://memocubee.github.io/DailyZen/
 
 2.點嵌入
 
